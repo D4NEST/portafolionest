@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGES — Configuración inicial</title>
+  <style>
+    :root {
+      --primary: #0066ff; --accent: #00d4ff;
+      --bg: #0a0a0a; --card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.1); --text: #fff;
+      --text2: #b0b0b0; --success: #00ff88; --danger: #ff4444;
+      --grad: linear-gradient(135deg,#0066ff,#00d4ff);
+      --radius: 12px; --radius-lg: 16px;
+      --shadow: 0 15px 50px rgba(0,102,255,0.25);
+      --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Segoe UI','Inter',sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+    }
+    body::before {
+      content:''; position:fixed; inset:0; z-index:-1;
+      background:
+        radial-gradient(circle at 20% 80%,rgba(0,102,255,.1) 0%,transparent 50%),
+        radial-gradient(circle at 80% 20%,rgba(0,212,255,.08) 0%,transparent 50%);
+    }
+    .wizard { width:100%; max-width:520px; padding:20px; }
+    .card {
+      background:var(--card); backdrop-filter:blur(20px);
+      border:1px solid var(--border); border-radius:var(--radius-lg);
+      box-shadow:var(--shadow); overflow:hidden; position:relative;
+    }
+    .card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background:var(--grad);
+    }
+    .card-header { padding:32px 36px 0; text-align:center; }
+    .logo-upload-area {
+      width:90px; height:90px; border-radius:50%;
+      border:2px dashed var(--border); margin:0 auto 16px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:var(--transition); overflow:hidden;
+      background:rgba(255,255,255,.03);
+    }
+    .logo-upload-area:hover { border-color:var(--primary); background:rgba(0,102,255,.05); }
+    .logo-upload-area img { width:100%; height:100%; object-fit:cover; display:none; }
+    .logo-upload-area .icon { font-size:2rem; color:var(--text2); }
+    h1 {
+      font-size:1.6rem; font-weight:700; margin-bottom:6px;
+      background:var(--grad); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .subtitle { color:var(--text2); font-size:.9rem; margin-bottom:28px; }
+    .steps { display:flex; justify-content:center; gap:8px; margin-bottom:28px; }
+    .step {
+      width:32px; height:4px; border-radius:2px;
+      background:var(--border); transition:var(--transition);
+    }
+    .step.active { background:var(--grad); }
+    .card-body { padding:0 36px 36px; }
+    .step-panel { display:none; }
+    .step-panel.active { display:block; }
+    .form-group { margin-bottom:20px; }
+    label { display:block; font-size:.8rem; color:var(--text2); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+    input, select {
+      width:100%; padding:13px 16px;
+      background:rgba(255,255,255,.03); border:1px solid var(--border);
+      border-radius:var(--radius); color:var(--text); font-size:.95rem;
+      outline:none; transition:var(--transition);
+    }
+    input:focus, select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(0,102,255,.1); }
+    select option { background:#111; }
+    .btn {
+      width:100%; padding:14px; background:var(--grad);
+      border:none; border-radius:var(--radius); color:#fff;
+      font-size:.95rem; font-weight:600; cursor:pointer;
+      transition:var(--transition); text-transform:uppercase; letter-spacing:.5px;
+    }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,102,255,.3); }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .btn-outline {
+      background:transparent; border:1px solid var(--border); color:var(--text2);
+      margin-bottom:10px;
+    }
+    .btn-outline:hover { border-color:var(--primary); color:var(--text); }
+    .error { color:var(--danger); font-size:.85rem; margin-top:12px; display:none; }
+    .success-icon { font-size:3rem; text-align:center; margin-bottom:12px; }
+    #logoInput { display:none; }
+    .password-hint { font-size:.75rem; color:var(--text2); margin-top:4px; }
+  </style>
+</head>
+<body>
+<div class="wizard">
+  <div class="card">
+    <div class="card-header">
+      <div class="logo-upload-area" id="logoArea" onclick="document.getElementById('logoInput').click()">
+        <img id="logoPreview" alt="Logo" />
+        <span class="icon" id="logoIcon">🏢</span>
+      </div>
+      <input type="file" id="logoInput" accept="image/*" onchange="previewLogo(this)" />
+      <h1>Bienvenido a SIGES</h1>
+      <p class="subtitle">Configura tu sistema en 3 pasos</p>
+      <div class="steps">
+        <div class="step active" id="s1"></div>
+        <div class="step" id="s2"></div>
+        <div class="step" id="s3"></div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <!-- Paso 1: Empresa y rubro -->
+      <div class="step-panel active" id="panel1">
+        <div class="form-group">
+          <label>Nombre de tu empresa</label>
+          <input type="text" id="nombreEmpresa" placeholder="Ej: Distribuidora El Sol" />
+        </div>
+        <div class="form-group">
+          <label>Rubro de negocio</label>
+          <select id="rubroSelect">
+            <option value="">Cargando rubros...</option>
+          </select>
+        </div>
+        <button class="btn" onclick="irPaso(2)">Siguiente →</button>
+      </div>
+
+      <!-- Paso 2: Cuenta admin -->
+      <div class="step-panel" id="panel2">
+        <div class="form-group">
+          <label>Tu nombre</label>
+          <input type="text" id="adminNombre" placeholder="Ej: María González" />
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <input type="email" id="adminEmail" placeholder="admin@empresa.com" />
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="adminPassword" placeholder="Mínimo 6 caracteres" />
+          <p class="password-hint">Esta será tu contraseña de acceso al sistema.</p>
+        </div>
+        <button class="btn btn-outline" onclick="irPaso(1)">← Atrás</button>
+        <button class="btn" onclick="irPaso(3)">Siguiente →</button>
+      </div>
+
+      <!-- Paso 3: Confirmación -->
+      <div class="step-panel" id="panel3">
+        <div class="success-icon">✅</div>
+        <p style="text-align:center;color:var(--text2);margin-bottom:24px;">
+          Revisa los datos antes de finalizar la configuración.
+        </p>
+        <div id="resumen" style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-size:.9rem;line-height:2;"></div>
+        <button class="btn btn-outline" onclick="irPaso(2)">← Atrás</button>
+        <button class="btn" id="btnFinalizar" onclick="finalizar()">🚀 Finalizar configuración</button>
+        <p class="error" id="errorMsg"></p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = '/api';
+
+  async function cargarRubros() {
+    const res = await fetch(`${API}/rubros`);
+    const rubros = await res.json();
+    const sel = document.getElementById('rubroSelect');
+    sel.innerHTML = rubros.map(r => `<option value="${r.id}">${r.nombre} — ${r.descripcion || ''}</option>`).join('');
+  }
+
+  function previewLogo(input) {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('logoPreview');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.getElementById('logoIcon').style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+
+  function irPaso(n) {
+    const nombre = document.getElementById('nombreEmpresa').value.trim();
+    const rubro = document.getElementById('rubroSelect').value;
+    const adminNombre = document.getElementById('adminNombre').value.trim();
+    const adminEmail = document.getElementById('adminEmail').value.trim();
+    const adminPassword = document.getElementById('adminPassword').value;
+
+    if (n === 2 && (!nombre || !rubro)) {
+      alert('Completa el nombre de empresa y el rubro.'); return;
+    }
+    if (n === 3) {
+      if (!adminNombre || !adminEmail || !adminPassword) {
+        alert('Completa todos los campos de la cuenta.'); return;
+      }
+      if (adminPassword.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres.'); return;
+      }
+      const rubroText = document.getElementById('rubroSelect').selectedOptions[0]?.text || '';
+      document.getElementById('resumen').innerHTML = `
+        <b>Empresa:</b> ${nombre}<br>
+        <b>Rubro:</b> ${rubroText}<br>
+        <b>Administrador:</b> ${adminNombre}<br>
+        <b>Email:</b> ${adminEmail}
+      `;
+    }
+
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById(`panel${i}`).classList.remove('active');
+      document.getElementById(`s${i}`).classList.remove('active');
+    }
+    document.getElementById(`panel${n}`).classList.add('active');
+    document.getElementById(`s${n}`).classList.add('active');
+  }
+
+  async function finalizar() {
+    const btn = document.getElementById('btnFinalizar');
+    const errEl = document.getElementById('errorMsg');
+    btn.disabled = true;
+    btn.textContent = '⏳ Configurando...';
+    errEl.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('nombre_empresa', document.getElementById('nombreEmpresa').value.trim());
+    formData.append('rubro_id', document.getElementById('rubroSelect').value);
+    formData.append('admin_nombre', document.getElementById('adminNombre').value.trim());
+    formData.append('admin_email', document.getElementById('adminEmail').value.trim());
+    formData.append('admin_password', document.getElementById('adminPassword').value);
+
+    const logoFile = document.getElementById('logoInput').files[0];
+    if (logoFile) formData.append('logo', logoFile);
+
+    try {
+      const res = await fetch(`${API}/config/setup`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al configurar');
+      window.location.href = '/dashboard';
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🚀 Finalizar configuración';
+    }
+  }
+
+  cargarRubros();
+</script>
+</body>
+</html>

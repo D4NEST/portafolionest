@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Meta-Modelador</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; display: flex; height: 100vh; overflow: hidden; }
+
+    /* Sidebar */
+    #sidebar {
+      width: 260px; min-width: 260px; background: #161b27; border-right: 1px solid #2a2f3e;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid #2a2f3e; }
+    .sidebar-header .empresa-nombre { font-size: 1rem; font-weight: 700; color: #fff; }
+    .sidebar-header .rubro-badge {
+      display: inline-block; margin-top: 4px; padding: 2px 8px;
+      background: #1e3a5f; border-radius: 20px; font-size: 0.75rem; color: #4f8ef7;
+    }
+    .sidebar-section { padding: 12px 16px 4px; font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 1px; color: #555; }
+    .entidad-item {
+      padding: 10px 16px; cursor: pointer; border-radius: 6px; margin: 2px 8px;
+      display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
+      transition: background 0.15s;
+    }
+    .entidad-item:hover { background: #1e2535; }
+    .entidad-item.active { background: #1e3a5f; color: #4f8ef7; }
+    .sidebar-footer { margin-top: auto; padding: 12px 16px; border-top: 1px solid #2a2f3e; }
+    .btn-volver { width: 100%; padding: 8px; background: transparent; border: 1px solid #2a2f3e;
+      border-radius: 6px; color: #888; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+    .btn-volver:hover { border-color: #4f8ef7; color: #4f8ef7; }
+
+    /* Main */
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar {
+      padding: 16px 24px; border-bottom: 1px solid #2a2f3e;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar h2 { font-size: 1.1rem; font-weight: 600; }
+    .btn-primary {
+      padding: 8px 16px; background: #4f8ef7; border: none; border-radius: 6px;
+      color: #fff; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #3a7de0; }
+
+    /* Tabla de campos */
+    #content { flex: 1; overflow-y: auto; padding: 24px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #555; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { text-align: left; padding: 10px 12px; background: #161b27; color: #888;
+      font-weight: 500; border-bottom: 1px solid #2a2f3e; }
+    td { padding: 10px 12px; border-bottom: 1px solid #1e2535; vertical-align: middle; }
+    tr:hover td { background: #161b27; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+    }
+    .badge-tipo { background: #1e3a5f; color: #4f8ef7; }
+    .badge-req { background: #1e3a1e; color: #4caf50; }
+    .badge-opt { background: #2a2f3e; color: #888; }
+    .btn-icon {
+      background: transparent; border: none; cursor: pointer; padding: 4px 8px;
+      border-radius: 4px; font-size: 0.85rem; transition: background 0.15s;
+    }
+    .btn-edit { color: #4f8ef7; }
+    .btn-edit:hover { background: #1e3a5f; }
+    .btn-del { color: #ff6b6b; }
+    .btn-del:hover { background: #3a1e1e; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #161b27; border: 1px solid #2a2f3e; border-radius: 12px;
+      padding: 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal h3 { font-size: 1rem; margin-bottom: 20px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+    .form-row input, .form-row select {
+      width: 100%; padding: 9px 12px; background: #0f1117; border: 1px solid #2a2f3e;
+      border-radius: 6px; color: #e0e0e0; font-size: 0.875rem; outline: none;
+    }
+    .form-row input:focus, .form-row select:focus { border-color: #4f8ef7; }
+    .form-check { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.875rem; }
+    .form-check input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .btn-cancel {
+      padding: 8px 16px; background: transparent; border: 1px solid #2a2f3e;
+      border-radius: 6px; color: #888; cursor: pointer; font-size: 0.85rem;
+    }
+    .btn-cancel:hover { border-color: #555; color: #ccc; }
+  </style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="empresa-nombre" id="sideEmpresa">Empresa</div>
+    <span class="rubro-badge" id="sideRubro">Rubro</span>
+  </div>
+  <div class="sidebar-section">Entidades</div>
+  <div id="entidadesList"></div>
+  <div class="sidebar-footer">
+    <button class="btn-volver" onclick="window.location.href='/'">← Volver al inicio</button>
+  </div>
+</div>
+
+<div id="main">
+  <div class="topbar">
+    <h2 id="topbarTitle">Selecciona una entidad</h2>
+    <button class="btn-primary" id="btnNuevoCampo" style="display:none" onclick="abrirModal()">+ Nuevo campo</button>
+  </div>
+  <div id="content">
+    <div class="empty-state">
+      <div class="icon">👈</div>
+      <p>Selecciona una entidad del panel izquierdo para ver sus campos.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal campo -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Nuevo campo</h3>
+    <input type="hidden" id="campoId" />
+
+    <div class="form-row">
+      <label>Nombre (interno)</label>
+      <input type="text" id="fNombre" placeholder="ej: precio_venta" />
+    </div>
+    <div class="form-row">
+      <label>Nombre físico (columna BD)</label>
+      <input type="text" id="fFisico" placeholder="ej: precio_venta" />
+    </div>
+    <div class="form-row">
+      <label>Etiqueta (visible al usuario)</label>
+      <input type="text" id="fEtiqueta" placeholder="ej: Precio de venta" />
+    </div>
+    <div class="form-row">
+      <label>Tipo</label>
+      <select id="fTipo">
+        <option value="string">string — Texto corto</option>
+        <option value="text">text — Texto largo</option>
+        <option value="integer">integer — Número entero</option>
+        <option value="float">float — Número decimal</option>
+        <option value="currency">currency — Moneda</option>
+        <option value="boolean">boolean — Sí/No</option>
+        <option value="date">date — Fecha</option>
+        <option value="email">email — Correo</option>
+        <option value="select">select — Lista de opciones</option>
+      </select>
+    </div>
+    <div class="form-check">
+      <input type="checkbox" id="fRequerido" />
+      <label for="fRequerido">Campo requerido</label>
+    </div>
+    <div class="form-check">
+      <input type="checkbox" id="fUnico" />
+      <label for="fUnico">Valor único</label>
+    </div>
+    <div class="form-check">
+      <input type="checkbox" id="fTabla" checked />
+      <label for="fTabla">Visible en tabla</label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarCampo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = '/api';
+  let entidadActual = null;
+
+  // Cargar datos de sesión
+  const empresa = JSON.parse(sessionStorage.getItem('empresa') || 'null');
+  const rubro   = JSON.parse(sessionStorage.getItem('rubro')   || 'null');
+
+  if (!empresa || !rubro) {
+    window.location.href = '/';
+  }
+
+  document.getElementById('sideEmpresa').textContent = empresa.nombre;
+  document.getElementById('sideRubro').textContent   = rubro.nombre;
+
+  // Cargar entidades en sidebar
+  async function cargarEntidades() {
+    const res = await fetch(`${API}/rubros/${rubro.id}/entidades`);
+    const entidades = await res.json();
+    const lista = document.getElementById('entidadesList');
+    lista.innerHTML = entidades.map(e => `
+      <div class="entidad-item" id="ent-${e.id}" onclick="seleccionarEntidad(${e.id}, '${e.nombre_plural || e.nombre}', '${e.icono}')">
+        <span>${e.icono}</span>
+        <span>${e.nombre_plural || e.nombre}</span>
+      </div>
+    `).join('');
+  }
+
+  async function seleccionarEntidad(id, nombre, icono) {
+    entidadActual = id;
+    document.querySelectorAll('.entidad-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(`ent-${id}`).classList.add('active');
+    document.getElementById('topbarTitle').textContent = `${icono} ${nombre}`;
+    document.getElementById('btnNuevoCampo').style.display = 'inline-block';
+    await cargarCampos(id);
+  }
+
+  async function cargarCampos(entidadId) {
+    const res = await fetch(`${API}/entidades/${entidadId}/campos`);
+    const campos = await res.json();
+    const content = document.getElementById('content');
+
+    if (!campos.length) {
+      content.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>No hay campos aún. Agrega el primero.</p></div>`;
+      return;
+    }
+
+    content.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Nombre</th><th>Columna BD</th><th>Tipo</th>
+            <th>Etiqueta</th><th>Requerido</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${campos.map((c, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${c.nombre}</td>
+              <td><code style="color:#888;font-size:0.8rem">${c.nombre_fisico}</code></td>
+              <td><span class="badge badge-tipo">${c.tipo}</span></td>
+              <td>${c.etiqueta || '—'}</td>
+              <td><span class="badge ${c.es_requerido ? 'badge-req' : 'badge-opt'}">${c.es_requerido ? 'Sí' : 'No'}</span></td>
+              <td>
+                <button class="btn-icon btn-edit" onclick='editarCampo(${JSON.stringify(c)})'>✏️</button>
+                <button class="btn-icon btn-del" onclick="eliminarCampo(${c.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // Modal
+  function abrirModal(campo = null) {
+    document.getElementById('campoId').value   = campo ? campo.id : '';
+    document.getElementById('fNombre').value   = campo ? campo.nombre : '';
+    document.getElementById('fFisico').value   = campo ? campo.nombre_fisico : '';
+    document.getElementById('fEtiqueta').value = campo ? campo.etiqueta : '';
+    document.getElementById('fTipo').value     = campo ? campo.tipo : 'string';
+    document.getElementById('fRequerido').checked = campo ? campo.es_requerido : false;
+    document.getElementById('fUnico').checked     = campo ? campo.es_unico : false;
+    document.getElementById('fTabla').checked     = campo ? campo.visible_en_tabla : true;
+    document.getElementById('modalTitle').textContent = campo ? 'Editar campo' : 'Nuevo campo';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  function editarCampo(campo) { abrirModal(campo); }
+
+  async function guardarCampo() {
+    const id = document.getElementById('campoId').value;
+    const payload = {
+      nombre:          document.getElementById('fNombre').value.trim(),
+      nombre_fisico:   document.getElementById('fFisico').value.trim(),
+      etiqueta:        document.getElementById('fEtiqueta').value.trim(),
+      tipo:            document.getElementById('fTipo').value,
+      es_requerido:    document.getElementById('fRequerido').checked,
+      es_unico:        document.getElementById('fUnico').checked,
+      visible_en_tabla:document.getElementById('fTabla').checked,
+    };
+
+    const url    = id ? `${API}/campos/${id}` : `${API}/entidades/${entidadActual}/campos`;
+    const method = id ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      cerrarModal();
+      cargarCampos(entidadActual);
+    } else {
+      const err = await res.json();
+      alert('Error: ' + (err.error || JSON.stringify(err)));
+    }
+  }
+
+  async function eliminarCampo(id) {
+    if (!confirm('¿Eliminar este campo?')) return;
+    await fetch(`${API}/campos/${id}`, { method: 'DELETE' });
+    cargarCampos(entidadActual);
+  }
+
+  // Auto-completar nombre_fisico desde nombre
+  document.getElementById('fNombre').addEventListener('input', function () {
+    const fisico = document.getElementById('fFisico');
+    if (!document.getElementById('campoId').value) {
+      fisico.value = this.value.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    }
+  });
+
+  cargarEntidades();
+</script>
+</body>
+</html>

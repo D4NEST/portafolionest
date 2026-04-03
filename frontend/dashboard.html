@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGES - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/siges.css">
+    <!-- Anime.js para animaciones (opcional) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+</head>
+<body>
+    <div id="dashboardScreen" class="screen active">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-logo">
+                <img src="/assets/images/logo.png" alt="SIGES" class="logo" id="dashboardLogo">
+                <div class="header-titles">
+                    <h1 id="empresaNombre">SIGES</h1>
+                    <p>Panel de Control</p>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar" id="userInitial">A</div>
+                <span id="userName">Usuario</span>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenedor flex para sidebar + main -->
+        <div id="layoutContainer" style="display: flex; min-height: calc(100vh - 80px);">
+            <!-- Sidebar — desktop lateral, mobile bottom nav -->
+            <aside class="sidebar" id="mainSidebar">
+                <!-- Botón hamburguesa solo en móvil -->
+                <button id="sidebarToggle" class="sidebar-toggle-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div id="sidebarContent">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-section-title"><i class="fas fa-boxes"></i> ERP</h3>
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px;">
+                        <li><a href="#" class="sidebar-link" data-modulo="inventario"><i class="fas fa-cubes"></i><span>Inventario</span></a></li>
+                        <li><a href="#" class="sidebar-link" data-modulo="ventas"><i class="fas fa-shopping-cart"></i><span>Ventas</span></a></li>
+                        <li><a href="#" class="sidebar-link" data-modulo="compras"><i class="fas fa-truck"></i><span>Compras</span></a></li>
+                        <li><a href="#" class="sidebar-link" data-modulo="caja"><i class="fas fa-coins"></i><span>Caja</span></a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section" style="margin-top: 24px;">
+                    <h3 class="sidebar-section-title"><i class="fas fa-users"></i> CRM</h3>
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px;">
+                        <li><a href="#" class="sidebar-link" data-modulo="contactos"><i class="fas fa-address-book"></i><span>Contactos</span></a></li>
+                        <li><a href="#" class="sidebar-link" data-modulo="agenda"><i class="fas fa-calendar-alt"></i><span>Agenda</span></a></li>
+                        <li><a href="#" class="sidebar-link" data-modulo="seguimiento"><i class="fas fa-chart-line"></i><span>Seguimiento</span></a></li>
+                    </ul>
+                </div>
+                </div>
+            </aside>
+
+            <!-- Main content (el resto del dashboard) -->
+            <main class="main-content" style="flex: 1; padding: 20px;">
+                <div class="container">
+                    <!-- Título y botones -->
+                    <div class="page-title">
+                        <h1><i class="fas fa-chart-pie"></i> <span id="currentModule">Dashboard</span></h1>
+                        <div class="header-buttons">
+                            <button class="btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                            <button class="btn" id="addBtn" style="display: none;"><i class="fas fa-plus"></i> Agregar</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats" id="statsContainer">
+                        <!-- Se llenarán dinámicamente -->
+                    </div>
+
+                    <!-- Selector de entidad (solo se muestra si hay varias entidades en el módulo) -->
+                    <div class="card" style="margin-bottom: 20px; display: none;" id="entitySelectorCard">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <label for="entitySelect" style="font-weight: 600;">Entidad:</label>
+                            <select id="entitySelect" class="form-control" style="width: 300px;">
+                                <option value="">-- Selecciona una entidad --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de registros -->
+                    <div class="card">
+                        <div class="search-bar">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Buscar...">
+                            <button class="btn" id="searchBtn"><i class="fas fa-search"></i> Buscar</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="dataTable">
+                                <thead>
+                                    <tr>
+                                        <!-- Los encabezados se generan dinámicamente -->
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <tr><td colspan="10" style="text-align: center; padding: 40px;">
+                                        <div class="loading"></div> Cargando...
+                                    </td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel de tareas (opcional) -->
+                    <div class="card">
+                        <h3><i class="fas fa-tasks"></i> Tareas Pendientes</h3>
+                        <div id="tasksContainer">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Panel de alertas (opcional) -->
+                    <div class="card">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Alertas</h3>
+                        <div id="alertsContainer">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modales (puedes agregarlos después) -->
+    <div class="modal" id="itemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"><i class="fas fa-plus"></i> Agregar Registro</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <form id="itemForm">
+                <div style="padding: 25px;" id="modalFieldsContainer">
+                    <!-- Los campos se generarán dinámicamente -->
+                </div>
+                <div style="padding: 0 25px 25px 25px;">
+                    <button type="submit" class="btn btn-block">Guardar</button>
+                    <div id="modalMessage" class="alert" style="display: none; margin-top: 20px;"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Confirmar acción</h2>
+                <button class="close-btn" id="closeConfirmModal">&times;</button>
+            </div>
+            <div style="padding: 25px;">
+                <p id="confirmMessage"></p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn" id="confirmYes">Sí</button>
+                    <button class="btn btn-danger" id="confirmNo">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mainSidebar');
+            sidebar.classList.toggle('sidebar-open');
+        }
+        // Cerrar sidebar al seleccionar módulo en móvil
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.sidebar-link')) {
+                const sidebar = document.getElementById('mainSidebar');
+                if (window.innerWidth < 768) sidebar.classList.remove('sidebar-open');
+            }
+        });
+    </script>
+</body>
+</html>
