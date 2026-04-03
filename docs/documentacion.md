@@ -4,8 +4,8 @@
 **Versión:** 1.0 (en desarrollo)  
 **Fecha:** Marzo 2026  
 **Tecnologías:** Python 3.x · Flask · PostgreSQL · SQLAlchemy · HTML/CSS/JS vanilla  
-**Autor del proyecto:** Yamileth  
-**Entorno de desarrollo:** Windows — `C:\Users\Yamileth\Metamodelador\`
+**Autor del proyecto:** Nestor
+**Entorno de desarrollo:** Windows —
 
 ---
 
