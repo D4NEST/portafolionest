@@ -417,14 +417,14 @@ Solo informativo — sin lógica fiscal ni numeración legal. Implementar como e
 
 ---
 
-## 11. Cómo continuar con Kiro
+## 11. Cómo continuar 
 
 Al iniciar una nueva sesión, pega este mensaje de contexto:
 
 ```
 Proyecto: SIGES — Sistema de gestión empresarial con meta-modelador.
 Stack: Flask + PostgreSQL + SQLAlchemy + HTML/JS vanilla.
-Ruta: C:\Users\Yamileth\Metamodelador\
+
 
 Estado actual:
 - Backend completo: modelos, rutas CRUD, auth, config, tareas, notificaciones, alertas, DSS brecha.
